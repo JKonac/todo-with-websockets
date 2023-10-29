@@ -4,7 +4,7 @@ interface TodoListColumnsProps {
   data: {
     title: string;
     taskDone: Boolean;
-    id: number;
+    taskId: number;
   }[];
   toggleTodoItemHandler: (id: number) => void;
 }
