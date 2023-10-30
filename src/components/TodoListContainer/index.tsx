@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TodoListSideBar from "./components/TodoListSideBar";
 import TodoListColumns from "./components/TodoListColumns";
-import { TodoItemType } from "@/utils";
 import AWS from "aws-sdk";
+import { generateDynamoDBParams, generateUID } from "@/utils";
 
 AWS.config.update({
   accessKeyId: "AKIASFTSXCKEDDKP5YOO",
@@ -31,20 +31,23 @@ export default function TodoListContainer() {
   //   }
   // }
 
-  async function pushTaskToList(listID: string, task: string): Promise<void> {
-    const params = {
-      TableName: "ubiquiti-todo",
-      Key: {
-        ListID: listID,
-      },
-    };
-
+  async function pushTaskToList(
+    listID: string,
+    taskTitle: string
+  ): Promise<void> {
+    const params = generateDynamoDBParams(listID);
     try {
       // Get the current item from DynamoDB
       const result = await dynamodb.get(params).promise();
       const existingTasks = result.Item?.Tasks || [];
-      const updatedTasks = existingTasks.concat(task);
 
+      const newTask = {
+        taskId: generateUID(),
+        taskTitle,
+        taskDone: false,
+      };
+
+      const updatedTasks = existingTasks.concat(newTask);
       const updateParams = {
         TableName: "ubiquiti-todo",
         Key: {
@@ -55,52 +58,76 @@ export default function TodoListContainer() {
           ":tasks": updatedTasks,
         },
       };
-
       await dynamodb.update(updateParams).promise();
-      console.log("Task added to the list:", task);
+      console.log("Task added to the list:", taskTitle);
     } catch (error) {
       console.error("Error adding task to the list:", error);
     }
   }
 
-  async function getItemsFromTodoList(listID: string): Promise<void> {
-    const params = {
-      TableName: "ubiquiti-todo",
-      Key: {
-        ListID: listID,
-      },
-    };
-
+  async function updateTask(taskId: string): Promise<void> {
+    const params = generateDynamoDBParams("MyTodoList");
     try {
+      // Get the current item from DynamoDB
       const result = await dynamodb.get(params).promise();
-      console.log("Items for ListID:", listID, " - Data:", result.Item);
+      const existingTasks = result.Item?.Tasks || [];
+      console.log(existingTasks);
+      const index = existingTasks.findIndex(
+        (item: { taskId: string }) => item.taskId === taskId
+      );
+      console.log("FOUND INDEX", index);
+      existingTasks[index].taskDone = !existingTasks[index].taskDone;
+      setTodoListItems(existingTasks);
+
+      const updatedTasks = existingTasks;
+      const updateParams = {
+        TableName: "ubiquiti-todo",
+        Key: {
+          ListID: "MyTodoList",
+        },
+        UpdateExpression: "SET Tasks = :tasks",
+        ExpressionAttributeValues: {
+          ":tasks": updatedTasks,
+        },
+      };
+      await dynamodb.update(updateParams).promise();
+      console.log("Updated task:", taskId);
+    } catch (error) {
+      console.error("Error adding task to the list:", error);
+    }
+  }
+
+  const [todoListItems, setTodoListItems] = useState();
+
+  async function getItemsFromTodoList(listID: string): Promise<any> {
+    try {
+      const params = generateDynamoDBParams(listID);
+      const result = await dynamodb.get(params).promise();
+      // console.log("Items for ListID:", listID, " - Data:", result.Item);
+      return result;
     } catch (error) {
       console.error("Error getting items:", error);
     }
   }
 
-  const [mockData, setMockData] = useState([
-    { title: "test", taskDone: false, taskId: 0 },
-    { title: "test1", taskDone: false, taskId: 1 },
-    { title: "test2", taskDone: true, taskId: 2 },
-    { title: "test3", taskDone: false, taskId: 3 },
-    { title: "test4", taskDone: false, taskId: 4 },
-    { title: "test5", taskDone: false, taskId: 5 },
-    { title: "test6", taskDone: true, taskId: 6 },
-    { title: "test7", taskDone: true, taskId: 7 },
-  ]);
-
-  const toggleTodoItemHandler = (id: number) => {
-    const newArr = [...mockData];
-    const index = newArr.findIndex((item) => item.taskId === id);
-    newArr[index].taskDone = !newArr[index].taskDone;
-    setMockData(newArr);
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getItemsFromTodoList("MyTodoList");
+      console.log("RESULTS", response.Item.Tasks);
+      setTodoListItems(response.Item.Tasks);
+    };
+    fetchData();
+  }, []);
+  // const toggleTodoItemHandler = (id: number) => {
+  //   const newArr = [...todoListItems];
+  //   const index = newArr.findIndex((item) => item.taskId === id);
+  //   newArr[index].taskDone = !newArr[index].taskDone;
+  //   setTodoListItems(newArr);
+  // };
 
   return (
     <>
       {/* <button onClick={() => createToDoList("MyTodoList", "MyTodoList")}>HEJ</button> */}
-      <button onClick={() => getItemsFromTodoList("MyTodoList")}>Get</button>
       <button
         onClick={() =>
           pushTaskToList("MyTodoList", `Hello ${Math.random() * 100}`)
@@ -108,11 +135,15 @@ export default function TodoListContainer() {
       >
         push item
       </button>
-      <TodoListSideBar />
-      <TodoListColumns
-        data={mockData}
-        toggleTodoItemHandler={toggleTodoItemHandler}
-      />
+      {todoListItems && (
+        <>
+          <TodoListSideBar />
+          <TodoListColumns
+            data={todoListItems}
+            toggleTodoItemHandler={updateTask}
+          />
+        </>
+      )}
     </>
   );
 }
