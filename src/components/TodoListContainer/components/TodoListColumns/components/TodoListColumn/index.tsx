@@ -7,6 +7,8 @@ interface TodoListColumnProps {
     taskId: string;
   }[];
   toggleTodoItemHandler: (taskId: string) => void;
+  addTaskToTodoListHandler: (listID: string, taskTitle: string) => void;
+  removeTaskFromTodoHandler: (listID: string, taskID: string) => void;
   title: string;
   status?: string;
 }
@@ -16,20 +18,29 @@ export default function TodoListColumn({
   title,
   status = "",
   toggleTodoItemHandler,
+  addTaskToTodoListHandler,
+  removeTaskFromTodoHandler
 }: TodoListColumnProps) {
   return (
     <div>
       <p className="mb-5 text-lg">{title}</p>
+      <button onClick={() => addTaskToTodoListHandler("MyTodoList", "asd")}>
+        add task
+      </button>
       <div className="col-span-1 grid gap-y-2">
         {data.map((mock, index) => {
           return (
             <div
               key={index}
-              className={`flex rounded-md shadow-md border h-fit ${status === "finished" && "bg-gray-100"} border-blue-300 p-3 items-center transition-all ease-in duration-100`}
+              className={`flex rounded-md shadow-md border h-fit ${
+                status === "finished" && "bg-gray-100"
+              } border-blue-300 p-3 items-center transition-all ease-in duration-100`}
             >
               <div
                 onClick={() => toggleTodoItemHandler(mock.taskId)}
-                className={`w-[22px] h-[22px] ${status === "finished" && "bg-emerald-600"} border border-gray-500 rounded mr-2 cursor-pointer`}
+                className={`w-[22px] h-[22px] ${
+                  status === "finished" && "bg-emerald-600"
+                } border border-gray-500 rounded mr-2 cursor-pointer`}
               >
                 <Image
                   src={"checkmark_icon.svg"}
@@ -38,10 +49,20 @@ export default function TodoListColumn({
                   height={25}
                 />
               </div>
-              <p className={`font-medium ${status === "finished" && "text-gray-500"}`}>{mock.taskTitle}</p>
+              <p
+                className={`font-medium ${
+                  status === "finished" && "text-gray-500"
+                }`}
+              >
+                {mock.taskTitle}
+              </p>
               <div
-                onClick={() => toggleTodoItemHandler(mock.taskId)}
-                className={`p-1 ${status === "finished" ? "hover:bg-white" : "hover:bg-slate-100"} rounded cursor-pointer ml-auto`}
+                onClick={() => removeTaskFromTodoHandler("MyTodoList", mock.taskId)}
+                className={`p-1 ${
+                  status === "finished"
+                    ? "hover:bg-white"
+                    : "hover:bg-slate-100"
+                } rounded cursor-pointer ml-auto`}
               >
                 <Image
                   src={"delete_icon.svg"}
