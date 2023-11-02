@@ -14,21 +14,18 @@ export default function TodoListColumns({
   toggleTodoItemHandler,
 }: TodoListColumnsProps) {
   return (
-    <div className="w-full flex">
-      <div className="w-full grid gap-y-2 px-4">
-        <p>Active tasks</p>
-        <TodoListColumn
-          data={data.filter((item) => !item.taskDone)}
-          toggleTodoItemHandler={toggleTodoItemHandler}
-        />
-      </div>
-      <div className="w-full px-4 grid gap-y-2">
-        <p>Finished tasks</p>
-        <TodoListColumn
-          data={data.filter((item) => item.taskDone)}
-          toggleTodoItemHandler={toggleTodoItemHandler}
-        />
-      </div>
+    <div className="w-full grid grid-cols-2 gap-8">
+      <TodoListColumn
+        data={data.filter((item) => !item.taskDone)}
+        toggleTodoItemHandler={toggleTodoItemHandler}
+        title={"Active tasks"}
+      />
+      <TodoListColumn
+        data={data.filter((item) => item.taskDone)}
+        toggleTodoItemHandler={toggleTodoItemHandler}
+        title={"Finished tasks"}
+        status={"finished"}
+      />
     </div>
   );
 }
