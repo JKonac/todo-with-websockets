@@ -54,7 +54,7 @@ export async function updateTask(
   dynamodb: any,
   setTodoListItems: any,
   socket: any,
-  selectedTable: string,
+  selectedTable: string
 ): Promise<void> {
   const params = generateDynamoDBParams(selectedTable);
   try {
@@ -85,7 +85,7 @@ export async function updateTask(
     socket.current?.send(
       JSON.stringify({
         action: "sendPublic",
-        message: {updatedTasks, listID: selectedTable},
+        message: { updatedTasks, listID: selectedTable },
       })
     );
   } catch (error) {
@@ -118,12 +118,6 @@ export async function deleteTaskFromTodoList(
     // Get the current item from DynamoDB
     const result = await dynamodb.get(params).promise();
     const existingTasks = result.Item?.Tasks || [];
-    console.log(
-      "ASDASD",
-      taskID,
-      existingTasks,
-      existingTasks.filter((task: any) => task.taskId === taskID)
-    );
     const newTasks = existingTasks.filter(
       (task: any) => task.taskId !== taskID
     );
@@ -150,21 +144,15 @@ export async function addTaskToTodoList(
 ): Promise<void> {
   const params = generateDynamoDBParams(listID);
   try {
-    console.log(1, params)
     // Get the current item from DynamoDB
     const result = await dynamodb.get(params).promise();
-    console.log(2)
-    
     const existingTasks = result.Item?.Tasks || [];
-    console.log(3)
-
     const newTask = {
       taskId: generateUID(),
       taskTitle,
       taskDone: false,
     };
     const updatedTasks = existingTasks.concat(newTask);
-    console.log("HIT", existingTasks, updatedTasks)
     const updateParams = {
       TableName: "ubiquiti-todo",
       Key: {

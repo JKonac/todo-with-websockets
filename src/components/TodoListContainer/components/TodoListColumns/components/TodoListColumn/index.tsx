@@ -6,8 +6,9 @@ interface TodoListColumnProps {
     taskDone: Boolean;
     taskId: string;
   }[];
-  selectedTable: string,
+  selectedTable: string;
   toggleTodoItemHandler: (taskId: string) => void;
+  setShowAddTaskPopup: (val: boolean) => void;
   addTaskToTodoListHandler: (listID: string, taskTitle: string) => void;
   removeTaskFromTodoHandler: (listID: string, taskID: string) => void;
   title: string;
@@ -22,14 +23,15 @@ export default function TodoListColumn({
   toggleTodoItemHandler,
   addTaskToTodoListHandler,
   removeTaskFromTodoHandler,
+  setShowAddTaskPopup,
 }: TodoListColumnProps) {
   return (
     <div>
       <div className="flex items-center mb-5">
-        <p className="text-lg font-medium">{title}</p>
+        <p className="text-lg font-medium mr-2">{`${title} (${data.length})`}</p>
         {status === "default" && (
-          <button onClick={() => addTaskToTodoListHandler(selectedTable, "asd")}>
-            add task
+          <button onClick={() => setShowAddTaskPopup(true)}>
+            <Image src={"add_icon.svg"} alt="add" width={25} height={25} />
           </button>
         )}
       </div>

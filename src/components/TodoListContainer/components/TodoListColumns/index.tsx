@@ -8,6 +8,7 @@ interface TodoListColumnsProps {
   }[];
   selectedTable: string;
   toggleTodoItemHandler: (taskId: string) => void;
+  setShowAddTaskPopup: (val: boolean) => void;
   addTaskToTodoListHandler: (listID: string, taskTitle: string) => void;
   removeTaskFromTodoHandler: (listID: string, taskID: string) => void;
 }
@@ -18,6 +19,7 @@ export default function TodoListColumns({
   toggleTodoItemHandler,
   addTaskToTodoListHandler,
   removeTaskFromTodoHandler,
+  setShowAddTaskPopup
 }: TodoListColumnsProps) {
   return (
     <div className="w-full grid grid-cols-2 gap-8">
@@ -28,6 +30,7 @@ export default function TodoListColumns({
         removeTaskFromTodoHandler={removeTaskFromTodoHandler}
         title={"Active tasks"}
         selectedTable={selectedTable}
+        setShowAddTaskPopup={setShowAddTaskPopup}
       />
       <TodoListColumn
         data={data.filter((item) => item.taskDone)}
@@ -37,6 +40,7 @@ export default function TodoListColumns({
         title={"Finished tasks"}
         status={"finished"}
         selectedTable={selectedTable}
+        setShowAddTaskPopup={setShowAddTaskPopup}
       />
     </div>
   );
