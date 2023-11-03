@@ -6,6 +6,7 @@ interface TodoListColumnProps {
     taskDone: Boolean;
     taskId: string;
   }[];
+  selectedTable: string,
   toggleTodoItemHandler: (taskId: string) => void;
   addTaskToTodoListHandler: (listID: string, taskTitle: string) => void;
   removeTaskFromTodoHandler: (listID: string, taskID: string) => void;
@@ -16,31 +17,40 @@ interface TodoListColumnProps {
 export default function TodoListColumn({
   data,
   title,
-  status = "",
+  status = "default",
+  selectedTable,
   toggleTodoItemHandler,
   addTaskToTodoListHandler,
-  removeTaskFromTodoHandler
+  removeTaskFromTodoHandler,
 }: TodoListColumnProps) {
   return (
     <div>
-      <p className="mb-5 text-lg">{title}</p>
-      <button onClick={() => addTaskToTodoListHandler("MyTodoList", "asd")}>
-        add task
-      </button>
+      <div className="flex items-center mb-5">
+        <p className="text-lg font-medium">{title}</p>
+        {status === "default" && (
+          <button onClick={() => addTaskToTodoListHandler(selectedTable, "asd")}>
+            add task
+          </button>
+        )}
+      </div>
       <div className="col-span-1 grid gap-y-2">
         {data.map((mock, index) => {
           return (
             <div
               key={index}
               className={`flex rounded-md shadow-md border h-fit ${
-                status === "finished" && "bg-gray-100"
-              } border-blue-300 p-3 items-center transition-all ease-in duration-100`}
+                status === "finished"
+                  ? "bg-gray-100 border-gray-200"
+                  : "border-blue-300"
+              }  p-3 items-center popupAnimation`}
             >
               <div
                 onClick={() => toggleTodoItemHandler(mock.taskId)}
                 className={`w-[22px] h-[22px] ${
-                  status === "finished" && "bg-emerald-600"
-                } border border-gray-500 rounded mr-2 cursor-pointer`}
+                  status === "finished"
+                    ? "bg-blue-600 border-blue-300"
+                    : "border-gray-300 hover:bg-blue-100"
+                } border border-gray-300 rounded mr-2 cursor-pointer transition duration-100`}
               >
                 <Image
                   src={"checkmark_icon.svg"}
@@ -57,7 +67,9 @@ export default function TodoListColumn({
                 {mock.taskTitle}
               </p>
               <div
-                onClick={() => removeTaskFromTodoHandler("MyTodoList", mock.taskId)}
+                onClick={() =>
+                  removeTaskFromTodoHandler(selectedTable, mock.taskId)
+                }
                 className={`p-1 ${
                   status === "finished"
                     ? "hover:bg-white"

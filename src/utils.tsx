@@ -24,36 +24,44 @@ export const generateUID = function () {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-// async function createToDoList(listID: string, name: string): Promise<void> {
-//   const params = {
-//     TableName: "ubiquiti-todo",
-//     Item: {
-//       ListID: listID,
-//       Name: name,
-//       // Add more attributes as needed for your to-do lists
-//     },
-//   };
+export async function createToDoList(
+  listID: string,
+  dynamodb: any,
+  name: string
+) {
+  const params = {
+    TableName: "ubiquiti-todo",
+    Item: {
+      ListID: listID,
+      Name: name,
+      Tasks: [],
+      ActiveUsers: [],
+      // Add more attributes as needed for your to-do lists
+    },
+  };
 
-//   try {
-//     await dynamodb.put(params).promise();
-//     console.log("To-Do List created successfully");
-//   } catch (error) {
-//     console.error("Error creating to-do list:", error);
-//   }
-// }
+  try {
+    await dynamodb.put(params).promise();
+    console.log("To-Do List created successfully");
+    return { listID: listID, name: name };
+  } catch (error) {
+    console.error("Error creating to-do list:", error);
+  }
+}
 
 export async function updateTask(
   taskId: string,
   dynamodb: any,
   setTodoListItems: any,
-  socket: any
+  socket: any,
+  selectedTable: string,
 ): Promise<void> {
-  const params = generateDynamoDBParams("MyTodoList");
+  const params = generateDynamoDBParams(selectedTable);
   try {
     // Get the current item from DynamoDB
     const result = await dynamodb.get(params).promise();
     const existingTasks = result.Item?.Tasks || [];
-    console.log(existingTasks);
+    console.log(existingTasks, taskId);
     const index = existingTasks.findIndex(
       (item: { taskId: string }) => item.taskId === taskId
     );
@@ -65,7 +73,7 @@ export async function updateTask(
     const updateParams = {
       TableName: "ubiquiti-todo",
       Key: {
-        ListID: "MyTodoList",
+        ListID: selectedTable,
       },
       UpdateExpression: "SET Tasks = :tasks",
       ExpressionAttributeValues: {
@@ -77,7 +85,7 @@ export async function updateTask(
     socket.current?.send(
       JSON.stringify({
         action: "sendPublic",
-        message: updatedTasks,
+        message: {updatedTasks, listID: selectedTable},
       })
     );
   } catch (error) {
@@ -142,17 +150,21 @@ export async function addTaskToTodoList(
 ): Promise<void> {
   const params = generateDynamoDBParams(listID);
   try {
+    console.log(1, params)
     // Get the current item from DynamoDB
     const result = await dynamodb.get(params).promise();
+    console.log(2)
+    
     const existingTasks = result.Item?.Tasks || [];
+    console.log(3)
 
     const newTask = {
       taskId: generateUID(),
       taskTitle,
       taskDone: false,
     };
-
     const updatedTasks = existingTasks.concat(newTask);
+    console.log("HIT", existingTasks, updatedTasks)
     const updateParams = {
       TableName: "ubiquiti-todo",
       Key: {

@@ -6,6 +6,7 @@ interface TodoListColumnsProps {
     taskDone: Boolean;
     taskId: string;
   }[];
+  selectedTable: string;
   toggleTodoItemHandler: (taskId: string) => void;
   addTaskToTodoListHandler: (listID: string, taskTitle: string) => void;
   removeTaskFromTodoHandler: (listID: string, taskID: string) => void;
@@ -13,6 +14,7 @@ interface TodoListColumnsProps {
 
 export default function TodoListColumns({
   data,
+  selectedTable,
   toggleTodoItemHandler,
   addTaskToTodoListHandler,
   removeTaskFromTodoHandler,
@@ -25,6 +27,7 @@ export default function TodoListColumns({
         addTaskToTodoListHandler={addTaskToTodoListHandler}
         removeTaskFromTodoHandler={removeTaskFromTodoHandler}
         title={"Active tasks"}
+        selectedTable={selectedTable}
       />
       <TodoListColumn
         data={data.filter((item) => item.taskDone)}
@@ -33,6 +36,7 @@ export default function TodoListColumns({
         removeTaskFromTodoHandler={removeTaskFromTodoHandler}
         title={"Finished tasks"}
         status={"finished"}
+        selectedTable={selectedTable}
       />
     </div>
   );
