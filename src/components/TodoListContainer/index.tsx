@@ -142,19 +142,21 @@ export default function TodoListContainer() {
     fetchData();
   }, [selectedTable]);
 
-  const onSocketOpen = () => {
+  const onSocketOpen = useCallback(() => {
     const names = "abcdefghijklmnopqrstuvw";
     const name =
       names[Math.floor(Math.random() * names.length)] +
       names[Math.floor(Math.random() * names.length)];
-    socket.current?.send(JSON.stringify({ action: "setName", name }));
-  };
+    if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+      socket.current.send(JSON.stringify({ action: "setName", name }));
+    }
+  }, []);
 
-  const onSocketClose = () => {
+  const onSocketClose = useCallback(() => {
     setActiveUsers([]);
-  };
+  }, []);
 
-  const onSocketMessage = (dataStr: string) => {
+  const onSocketMessage = useCallback((dataStr: string) => {
     const data = JSON.parse(dataStr || "[{}]");
     console.log(data, dataStr);
     if (data?.users) {
@@ -166,9 +168,9 @@ export default function TodoListContainer() {
     ) {
       setTodoListItems(data.todoList);
     }
-  };
+  }, []);
 
-  const onConnect = () => {
+  const onConnect = useCallback(() => {
     if (socket.current?.readyState !== WebSocket.OPEN) {
       socket.current = new WebSocket(URL);
       socket.current.addEventListener("open", onSocketOpen);
@@ -177,13 +179,14 @@ export default function TodoListContainer() {
         onSocketMessage(event.data);
       });
     }
-  };
+  }, []);
 
   useEffect(() => {
     onConnect();
-    return () => {
-      socket.current?.close();
-    };
+    if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+      // Close the WebSocket connection if it's open
+      socket.current.close();
+    }
   }, []);
 
   const handleTabClosing = () => {
@@ -214,7 +217,7 @@ export default function TodoListContainer() {
   return (
     <>
       <div className="flex w-full">
-        <div className="w-[250px] h-fit pr-12">
+        <div className="w-[250px] min-w-[250px] h-fit pr-12">
           <div className="bg-gray-100 p-3 rounded">
             <div className="flex justify-between">
               <p className="font-medium">Todolists</p>
@@ -254,7 +257,7 @@ export default function TodoListContainer() {
             </div>
           </div>
         </div>
-        <div className="w-4/5 mt-12">
+        <div className="w-full mt-12">
           <div className="h-10 flex mb-4">
             {activeUsers?.map((user: { userId: string; userName: string }) => (
               <div className="w-7 h-7 flex justify-center items-center uppercase text-xs rounded-full bg-emerald-600 text-white mr-2">
@@ -263,7 +266,7 @@ export default function TodoListContainer() {
             ))}
           </div>
           {loaded && (
-            <div className="flex w-full">
+            <div className="flex w-full min-w-[700px]">
               <TodoListSideBar
                 todoListTitle={selectedTable.name}
                 selectedTable={selectedTable}
