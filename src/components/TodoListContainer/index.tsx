@@ -12,7 +12,8 @@ import {
 } from "@/utils";
 import ActionPopup from "./components/ActionPopup";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
+import ActiveUsers from "./components/ActiveUsers";
+import AllTodoLists from "./components/AllTodoLists";
 
 AWS.config.update({
   accessKeyId: "AKIASFTSXCKEDDKP5YOO",
@@ -214,57 +215,22 @@ export default function TodoListContainer() {
     });
   };
 
+  const updateSelectedTableRef = (newVal: string) => {
+    selectedTableRef.current = newVal
+  }
+
   return (
     <>
       <div className="flex w-full">
-        <div className="w-[250px] min-w-[250px] h-fit pr-12">
-          <div className="bg-gray-100 p-3 rounded">
-            <div className="flex justify-between">
-              <p className="font-medium">Todolists</p>
-              <button
-                className=""
-                onClick={() => setShowAddTodoListPopup(true)}
-              >
-                <Image src={"add_icon.svg"} alt="add" width={25} height={25} />
-              </button>
-            </div>
-            <div className="border-b border-gray-300 my-2"></div>
-            <div className="grid grid-cols-1 gap-y-2">
-              {allTodoLists?.map(
-                (todoList: { name: string; listID: string }) => (
-                  <div
-                    className={`text-sm col-span-1 hover:bg-white p-2 rounded cursor-pointer w-full ${
-                      todoList.listID === selectedTable.listID && "bg-white"
-                    }`}
-                    onClick={() => {
-                      setSelectedTable(todoList);
-                      selectedTableRef.current = todoList.listID;
-                    }}
-                  >
-                    <p
-                      className={`
-                        ${
-                          todoList.listID === selectedTable.listID &&
-                          "font-medium"
-                        }
-                      `}
-                    >
-                      {todoList.name}
-                    </p>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </div>
+        <AllTodoLists
+          allTodoLists={allTodoLists}
+          setShowAddTodoListPopup={setShowAddTodoListPopup}
+          selectedTable={selectedTable}
+          updateSelectedTableRef={updateSelectedTableRef}
+          setSelectedTable={setSelectedTable}
+        />
         <div className="w-full mt-12">
-          <div className="h-10 flex mb-4">
-            {activeUsers?.map((user: { userId: string; userName: string }) => (
-              <div className="w-7 h-7 flex justify-center items-center uppercase text-xs rounded-full bg-emerald-600 text-white mr-2">
-                {user.userName}
-              </div>
-            ))}
-          </div>
+          {activeUsers && <ActiveUsers activeUsers={activeUsers} />}
           {loaded && (
             <div className="flex w-full min-w-[700px]">
               <TodoListSideBar

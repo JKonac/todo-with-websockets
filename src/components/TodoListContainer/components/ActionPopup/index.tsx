@@ -29,8 +29,13 @@ export default function ActionPopup({
         />
         <div className="flex justify-end mt-10">
           <button
-            className="font-semibold text-xs tracking-wider py-2 px-4 rounded border border-blue-700 bg-blue-700 hover:opacity-80 text-white uppercase"
+            className={`font-semibold text-xs tracking-wider py-2 px-4 rounded border ${
+              name?.length > 0
+                ? "bg-blue-700 border-blue-700"
+                : "bg-gray-700 border-gray-700"
+            }]  hover:opacity-80 text-white uppercase`}
             onClick={() => callToAction(name)}
+            disabled={name?.length === 0}
           >
             Add
           </button>
